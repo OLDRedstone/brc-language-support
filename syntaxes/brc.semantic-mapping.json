@@ -1,0 +1,42 @@
+{
+  "description": "Mapping from TextMate scopes in syntaxes/brc.tmLanguage.json to the extension's semantic token types.",
+  "tokenTypes": [
+    "duration",
+    "number",
+    "color",
+    "string",
+    "boolean",
+    "null",
+    "identifier",
+    "property",
+    "align",
+    "continuation",
+    "separator",
+    "terminator"
+  ],
+  "mapping": {
+    "support.type.property-name.property.brc": "property",
+    "assign.brc": "align",
+    "constant.other.color.rgb-value.value.brc": "color",
+    "constant.numeric.value.brc": "number",
+    "string.value.brc": "string",
+    "boolean.value.brc": "boolean",
+    "null.value.brc": "null",
+    "punctuation.separator.property-list.brc": "separator",
+    "identifier.property-list.brc": "identifier",
+    "word.brc": "identifier",
+    "duration.value.brc": "duration",
+    "fixed-duration.value.brc": "duration",
+    "indefinite-duration.value.brc": "duration",
+    "keyword.operator.continuation.brc": "continuation",
+    "punctuation.separator.brc": "separator",
+  "punctuation.terminator.brc": "terminator",
+    "punctuation.definition.property-list.begin.brc": null,
+    "punctuation.definition.property-list.end.brc": null,
+    "comment.line.double-slash.brc": null,
+    "comment.line.number-sign.brc": null,
+    "comment.block.brc": null
+  },
+  "notes": "Scopes mapped to null are intentionally not emitted as semantic tokens (they remain TextMate-only punctuation/comments). Keep this file in sync with syntaxes/brc.tmLanguage.json and package.json semanticTokenTypes.",
+  "generated": "2025-11-08"
+}

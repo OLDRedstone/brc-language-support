@@ -1,0 +1,155 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Brc",
+	"patterns": [
+		{
+			"include": "#comment"
+		},
+		{
+			"include": "#keyword"
+		},
+		{
+			"include": "#property-list"
+		}
+		,
+		{
+			"include": "#brc-line"
+		}
+	],
+	"repository": {
+		"comment": {
+			"patterns": [
+				{
+					"name": "comment.line.double-slash.brc",
+					"match": "//.*$"
+				},
+				{
+					"name": "comment.line.number-sign.brc",
+					"match": "#.*$"
+				},
+				{
+					"name": "comment.block.brc",
+					"begin": "/\\*",
+					"end": "\\*/"
+				}
+			]
+		},
+		"keyword": {
+			"patterns": [
+				{
+					"match": "\\b(?:if|else|for|while|return|function|var|let|const)\\b",
+					"name": "keyword.control.brc"
+				}
+			]
+		},
+		"property-list": {
+			"begin": "\\[",
+			"beginCaptures": {
+				"0": { "name": "punctuation.definition.property-list.begin.brc" }
+			},
+			"end": "\\]",
+			"endCaptures": {
+				"0": { "name": "punctuation.definition.property-list.end.brc" }
+			},
+			"name": "property-list.brc",
+			"patterns": [
+				{
+					"match": "\\s+",
+					"name": "text.whitespace.brc"
+				},
+				{
+					"match": "([A-Za-z_][A-Za-z0-9_]*)",
+					"name": "support.type.property-name.property.brc"
+				},
+				{
+					"match": "=",
+					"name": "assign.brc"
+				},
+				{
+					"match": "#([a-fA-F0-9]{8}|[a-fA-F0-9]{6}|[a-fA-F0-9]{4}|[a-fA-F0-9]{3})",
+					"name": "constant.other.color.rgb-value.value.brc"
+				},
+				{
+					"match": "-?(?:\\d*(?:\\.\\d+)|\\d+)(?:\\/\\d+)?",
+					"name": "constant.numeric.value.brc"
+				},
+				{
+					"match": "\"(?:\\\\.|[^\\\"])*\"|'(?:\\\\.|[^\\'])*'",
+					"name": "string.value.brc"
+				},
+				{
+					"match": "\\b(?:true|false)\\b",
+					"name": "boolean.value.brc"
+				},
+				{
+					"match": "\\bnull\\b",
+					"name": "null.value.brc"
+				},
+				{
+					"match": "\\,",
+					"name": "punctuation.separator.property-list.brc"
+				},
+				{
+					"match": "(?:\\\\.|[^\\\\\\[\\],])+(?:\\s+(?:\\\\.|[^\\\\\\[\\],])*)*",
+					"name": "identifier.property-list.brc"
+				}
+			]
+		},
+		"duration":{
+			"match": "(?<!\\\\)(-\\d+(\\/\\d+)?\\||(-*))\\|?",
+			"name": "duration.value.brc",
+			"captures": {
+				"0": {
+					"patterns": [
+						{
+							"match": "-\\d+(\\/\\d+)?\\|",
+							"name": "fixed-duration.value.brc"
+						},
+						{
+							"match": "-*",
+							"name": "indefinite-duration.value.brc"
+						}
+					]
+				}
+			}
+		}
+		,
+		"brc-line": {
+			"patterns": [
+				{
+					"match": "=(?:\\d+|=*)",
+					"name": "align.value.brc"
+				},
+				{
+					"match": "-\\d+(?:\\/\\d+)?\\|?",
+					"name": "duration.value.brc"
+				},
+				{
+					"match": "-{2,}\\|?",
+					"name": "duration.value.brc"
+				},
+				{
+					"match": "-\\|?",
+					"name": "duration.value.brc"
+				},
+				{
+					"match": "\\+\\|?|\\+",
+					"name": "keyword.operator.continuation.brc"
+				},
+				{
+					"match": "\\|",
+					"name": "punctuation.separator.brc"
+				},
+				{
+					"match": ";",
+					"name": "punctuation.terminator.brc"
+				},
+				{
+					"match": "(?:\\\\.|[^-\\[\\];\\|\\+\\=])+(?:\\s+(?:\\\\.|[^-\\[\\];\\|\\+\\=])*)*",
+					"name": "word.brc"
+				}
+			]
+		}
+	},
+	"scopeName": "text.brc"
+}

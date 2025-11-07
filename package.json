@@ -1,0 +1,103 @@
+{
+  "name": "brc-language-support",
+  "displayName": "brc-language-support",
+  "description": "The language highlighting support of Brc.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "main": "./extension.js",
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "brc",
+      "aliases": ["Brc", "brc"],
+      "extensions": ["brc"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "brc",
+      "scopeName": "text.brc",
+      "path": "./syntaxes/brc.tmLanguage.json"
+    }],
+    "semanticTokenTypes": [
+      { "id": "duration", "description": "Duration value" },
+      { "id": "number", "description": "Numeric literal" },
+      { "id": "color", "description": "Color literal" },
+      { "id": "string", "description": "String literal" },
+      { "id": "boolean", "description": "Boolean literal" },
+      { "id": "null", "description": "Null literal" },
+      { "id": "identifier", "description": "Identifier" },
+      { "id": "property", "description": "Property name" },
+      { "id": "align", "description": "Align/beat marker (=)" },
+      { "id": "continuation", "description": "Continuation marker (+ and +|)" },
+      { "id": "separator", "description": "Word separator (|) and section delimiter (; if desired)" },
+      { "id": "terminator", "description": "Section terminator / sentence delimiter (;)" },
+      { "id": "value", "description": "Unquoted value inside property lists" }
+    ],
+    "semanticTokenColors": {
+      "duration": { "foreground": "#d19a66", "fontStyle": "bold" },
+      "number": "#b5cea8",
+      "color": "#ff7b72",
+      "string": "#ce9178",
+      "value": "#9cdcfe",
+      "boolean": "#569cd6",
+      "null": "#569cd6",
+      "identifier": "#ffffff",
+      "property": "#c586c0",
+      "align": "#dcdcaa",
+      "continuation": "#d4d4d4",
+      "separator": "#abb2bf"
+    },
+    "configuration": {
+      "type": "object",
+      "title": "BRC Language Settings",
+      "properties": {
+        "brc.dynamicHighlighting.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable dynamic, extension-scoped syntax highlighting for BRC language (does not modify user theme or settings)."
+        },
+        "brc.dynamicHighlighting.colors": {
+          "type": "object",
+          "default": {
+            "duration": "#005685",
+            "number": "#b5cea8",
+            "color": "#D4BFFF",
+            "string": "#ce9178",
+            "value": "#9cdcfe",
+            "boolean": "#569CD6",
+            "null": "#569CD6",
+            "identifier": "#e0e0e0",
+            "property": "#9CDCFE",
+            "align": "#0087cf",
+            "continuation": "#ffdd00",
+            "separator": "#005685",
+            "terminator": "#ff9900"
+          },
+          "description": "Per-token colors used by the extension when dynamic highlighting is enabled. Keys are semantic token types defined by the extension."
+        }
+        ,
+        "brc.showSectionGutter": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a small section badge before each line indicating which section (counts ';' before the line)."
+        }
+          ,
+          "brc.sectionGutter.colors": {
+            "type": "object",
+            "default": {
+              "light": { "background": "#e6eef8", "stroke": "#bcd", "text": "#000000" },
+              "dark": { "background": "#2b2b3a", "stroke": "#4b5563", "text": "#ffffff" }
+            },
+            "description": "Colors used for the section gutter icons; provide light and dark theme variants. Example: {light:{background:'#e6eef8',stroke:'#bcd',text:'#000'},dark:{...}}"
+          }
+      }
+    }
+  },
+  "scripts": {
+    "test:parse": "node ./tools/run_tests_strict.js"
+  }
+}

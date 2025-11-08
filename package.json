@@ -1,12 +1,24 @@
 {
   "name": "brc-language-support",
-  "displayName": "brc-language-support",
+  "displayName": "Brc",
   "description": "The language highlighting support of Brc.",
   "version": "0.0.1",
+  "license": "MIT",
+  "publisher": "obugs",
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/OLDRedstone/brc-language-support.git"
+  },
+  "sponsor": {
+    "url": "https://afdian.com/a/obugs"
+  },
   "engines": {
     "vscode": "^1.105.0"
   },
   "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:brc"
+  ],
   "categories": [
     "Programming Languages"
   ],
@@ -90,8 +102,5 @@
           }
       }
     }
-  },
-  "scripts": {
-    "test:parse": "node ./tools/run_tests_strict.js"
   }
 }

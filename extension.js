@@ -196,7 +196,7 @@ function activate(context) {
     return deco;
   }
 
-  function applySectionDecorations(editor) {
+  function applySectionDecorations(editor, bracketRangesParam, tokensByLineParam) {
     if (!editor || editor.document.languageId !== 'brc') return;
     const cfg = vscode.workspace.getConfiguration('brc');
     const enabled = cfg.get('showSectionGutter', false);
@@ -212,41 +212,86 @@ function activate(context) {
 
     const doc = editor.document;
     const lineCount = doc.lineCount;
+    const docText = doc.getText();
+
+    // use provided bracketRanges from parser when available, otherwise compute
+    let bracketRanges = Array.isArray(bracketRangesParam) ? bracketRangesParam : [];
+    if(!Array.isArray(bracketRanges) || bracketRanges.length === 0){
+      try {
+        const parser = require('./tools/parse_lib');
+        if (typeof parser.getBracketRanges === 'function') bracketRanges = parser.getBracketRanges(docText);
+      } catch (e) { bracketRanges = bracketRanges || []; }
+    }
+
+    // precompute line start offsets (global offsets) for fast mapping
+    const lineStarts = new Array(lineCount);
+    for (let li = 0; li < lineCount; li++) lineStarts[li] = doc.offsetAt(new vscode.Position(li, 0));
+
+    function isInBracket(globalIndex){
+      for(const r of bracketRanges) if(globalIndex>=r.start && globalIndex<r.end) return true;
+      return false;
+    }
     const rangesBySection = {};
     let semicolonCount = 0;
     let prevSection = 0;
     const inlineRangesBySection = {};
+    const tokensByLine = Array.isArray(tokensByLineParam) ? tokensByLineParam : [];
+
+    // build a visible-line lookup to only create decoration ranges for visible lines
+    const visibleRanges = (editor.visibleRanges || []).map(r => ({ start: r.start.line, end: r.end.line }));
+    function isLineVisible(line) {
+      for (const vr of visibleRanges) if (line >= vr.start && line <= vr.end) return true;
+      return false;
+    }
+
+    // First pass: compute semicolon counts across all lines using parser tokens
+    // and record which lines are section starts. We only push actual decoration
+    // ranges for lines that are visible to avoid unnecessary editor.setDecorations work.
     for (let i = 0; i < lineCount; i++) {
-      const lineText = doc.lineAt(i).text;
+      const lineTokens = tokensByLine[i] || [];
       const section = semicolonCount + 1;
+
+  // determine gutter placement column: prefer first non-whitespace character,
+  // fall back to first token.start if available, otherwise column 0
+  const lineText = doc.lineAt(i).text;
+  let gutterCol = 0;
+  const firstNonWS = lineText.search(/\S/);
+  if (firstNonWS >= 0) gutterCol = firstNonWS;
+  else if (lineTokens.length > 0 && typeof lineTokens[0].start === 'number') gutterCol = lineTokens[0].start;
+
       if (section !== prevSection) {
         if (!rangesBySection[section]) rangesBySection[section] = [];
-        rangesBySection[section].push(new vscode.Range(i, 0, i, 0));
+        if (isLineVisible(i)) {
+          rangesBySection[section].push(new vscode.Range(i, gutterCol, i, gutterCol));
+        }
       }
       prevSection = section;
 
-      let lineSemicolonsSeen = 0;
-      for (let c = 0; c < lineText.length; c++) {
-        if (lineText[c] === ';') {
-          let j = c;
-          while (j + 1 < lineText.length && lineText[j + 1] === ';') j++;
-          const runLength = j - c + 1;
-          const lastIndex = j;
-          if (lastIndex !== lineText.length - 1) {
-            // place the decoration at the zero-length position immediately after the
-            // last semicolon in the run. Using a zero-length range with a 'before'
-            // decoration produces alignment very similar to the built-in color
-            // palette icons.
-            const semicolonsBefore = semicolonCount + lineSemicolonsSeen + (runLength - 1);
-            const displayNumber = semicolonsBefore + 2;
-            if (!inlineRangesBySection[displayNumber]) inlineRangesBySection[displayNumber] = [];
-            inlineRangesBySection[displayNumber].push(new vscode.Range(i, lastIndex + 1, i, lastIndex + 1));
-          }
-          lineSemicolonsSeen += runLength;
-          c = j;
+      // count terminator tokens (semicolon) in this line, grouping consecutive ones
+      let priorInLineSeen = 0;
+      for (let t = 0; t < lineTokens.length; t++) {
+        const tk = lineTokens[t];
+        if (tk.type !== 'terminator') continue;
+        let runLen = 1;
+        while (t + runLen < lineTokens.length && lineTokens[t + runLen].type === 'terminator' &&
+               lineTokens[t + runLen].start === lineTokens[t + runLen - 1].start + lineTokens[t + runLen - 1].length) {
+          runLen++;
         }
+        const lastToken = lineTokens[t + runLen - 1];
+        // only show inline badge if last semicolon is not at end of line
+        const lineText = doc.lineAt(i).text;
+        if (lastToken.start + lastToken.length !== lineText.length) {
+          const semicolonsBefore = semicolonCount + priorInLineSeen + (runLen - 1);
+          const displayNumber = semicolonsBefore + 2;
+          if (isLineVisible(i)) {
+            if (!inlineRangesBySection[displayNumber]) inlineRangesBySection[displayNumber] = [];
+            inlineRangesBySection[displayNumber].push(new vscode.Range(i, lastToken.start + lastToken.length, i, lastToken.start + lastToken.length));
+          }
+        }
+        priorInLineSeen += runLen;
+        t += runLen - 1;
       }
-      semicolonCount += lineSemicolonsSeen;
+      semicolonCount += priorInLineSeen;
     }
 
     for (const s of Object.keys(rangesBySection)) {
@@ -313,7 +358,7 @@ function activate(context) {
       }
     }
 
-    applySectionDecorations(editor);
+    applySectionDecorations(editor, res.bracketRanges, res.tokensByLine);
   }
 
   function scheduleUpdate(editor, delay = 200) {

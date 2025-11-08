@@ -9,8 +9,8 @@ const tokenTypes = [
   'value',
   'boolean',
   'null',
-  'identifier',
-  'property',
+  'word',
+  'key',
   'align',        // '='
   'continuation', // '+' and '+|'
   'separator',    // '|' (word separator) and optionally ';'
@@ -71,31 +71,31 @@ function activate(context) {
 
   const defaultTokenColors = {
     light: {
-      duration: '#97dbffff',
+      word: '#494949',
+      duration: '#97dbff',
+      align: '#009dff',
       number: '#0b6a6a',
       color: '#7c3aed',
       string: '#a16207',
-      value: '#007acc',
       boolean: '#0b5394',
       null: '#0b5394',
-      identifier: '#494949ff',
-      property: '#980000',
-      align: '#009dffff',
+      key: '#980000',
+      value: '#007acc',
       continuation: '#ffa600ff',
       separator: '#666666',
       terminator: '#c26e00ff'
     },
     dark: {
-      duration: '#d19a66',
+      word: '#e0e0e0',
+      duration: '#005888',
+      align: '#00a6ff',
       number: '#b5cea8',
       color: '#D4BFFF',
       string: '#ce9178',
-      value: '#9cdcfe',
       boolean: '#569CD6',
       null: '#569CD6',
-      identifier: '#e0e0e0',
-      property: '#9CDCFE',
-      align: '#0087cf',
+      key: '#9CDCFE',
+      value: '#9cdcfe',
       continuation: '#ffdd00',
       separator: '#005685',
       terminator: '#ff9900'
@@ -126,8 +126,7 @@ function activate(context) {
       const color = merged[t] || '#ffffff';
       decorationTypes[t] = vscode.window.createTextEditorDecorationType({
         color: color,
-        // add underline for identifier tokens using the token color for the line
-        textDecoration: t === 'identifier' ? `underline solid ${color}` : undefined,
+        textDecoration: t === 'word' ? `underline solid ${color}` : undefined,
         rangeBehavior: vscode.DecorationRangeBehavior.OpenOpen
       });
       context.subscriptions.push(decorationTypes[t]);

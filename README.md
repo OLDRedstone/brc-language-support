@@ -8,7 +8,7 @@
 	- 是否启用扩展的动态高亮（装饰器层）。若设为 `false`，扩展会清除其所有运行时装饰，完全保留用户主题的显示。
 
 - `brc.dynamicHighlighting.colors` (object)
-	- 可按 token 类型自定义颜色（十六进制字符串）。扩展支持的 token 类型包括：`duration`, `number`, `color`, `string`, `value`, `boolean`, `null`, `identifier`, `property`, `align`, `continuation`, `separator`, `terminator`。
+	- 可按 token 类型自定义颜色（十六进制字符串）。扩展支持的 token 类型包括：`duration`, `number`, `color`, `string`, `value`, `boolean`, `null`, `word`, `property`, `align`, `continuation`, `separator`, `terminator`。
 	- `value` 是新增的 token 类型，用于表示方括号属性集合（`[...]`）中未加引号的右侧值（例如 `[foo=bar]` 中的 `bar` 会被标记为 `value`）。
 
 示例（在 settings.json 中）：
@@ -24,8 +24,8 @@
 		"value": "#9cdcfe",
 		"boolean": "#569CD6",
 		"null": "#569CD6",
-		"identifier": "#e0e0e0",
-		"property": "#9CDCFE",
+		"word": "#e0e0e0",
+		"key": "#9CDCFE",
 		"align": "#0087cf",
 		"continuation": "#ffdd00",
 		"separator": "#005685",
@@ -48,7 +48,7 @@
 
 - 在属性列表外部：
 	- 单引号或双引号不再被视为会跨越整个文件或行的字符串界定符（这就是你在样例中看到的 `he's` 不应被当成字符串的原因）。
-	- 换句话说，`he's`、`don't` 等字符串中的单引号会被当作普通字符，identifier 也可以包含未转义的引号字符（扩展会把它们作为 identifier/普通文本处理，而不会尝试配对为字符串）。
+	- 换句话说，`he's`、`don't` 等字符串中的单引号会被当作普通字符，word 也可以包含未转义的引号字符（扩展会把它们作为 word/普通文本处理，而不会尝试配对为字符串）。
 
 因此：如果你需要在属性列表中表达一个包含引号的文字，请在 value 中转义引号；而在普通文本/行内，你可以直接使用引号字符，无需转义。
 

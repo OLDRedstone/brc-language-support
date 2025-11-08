@@ -69,21 +69,48 @@ function activate(context) {
   // inline section decoration cache (shown after ';')
   let inlineSectionDecorationTypes = {};
 
-  const defaultColors = {
-    duration: '#005685',
-    number: '#b5cea8',
-    color: '#D4BFFF',
-    string: '#ce9178',
-    value: '#9cdcfe',
-    boolean: '#569CD6',
-    null: '#569CD6',
-    identifier: '#e0e0e0',
-    property: '#9CDCFE',
-    align: '#0087cf',
-    continuation: '#ffdd00',
-    separator: '#005685',
-    terminator: '#ff9900'
+  const defaultTokenColors = {
+    light: {
+      duration: '#97dbffff',
+      number: '#0b6a6a',
+      color: '#7c3aed',
+      string: '#a16207',
+      value: '#007acc',
+      boolean: '#0b5394',
+      null: '#0b5394',
+      identifier: '#494949ff',
+      property: '#980000',
+      align: '#009dffff',
+      continuation: '#ffa600ff',
+      separator: '#666666',
+      terminator: '#c26e00ff'
+    },
+    dark: {
+      duration: '#d19a66',
+      number: '#b5cea8',
+      color: '#D4BFFF',
+      string: '#ce9178',
+      value: '#9cdcfe',
+      boolean: '#569CD6',
+      null: '#569CD6',
+      identifier: '#e0e0e0',
+      property: '#9CDCFE',
+      align: '#0087cf',
+      continuation: '#ffdd00',
+      separator: '#005685',
+      terminator: '#ff9900'
+    }
   };
+
+  function pickDefaultTokenColors() {
+    const cfg = vscode.workspace.getConfiguration('brc');
+    // prefer the active color theme; if unavailable fall back to user preference brc.defaultTheme
+    const themeKind = (vscode.window.activeColorTheme && vscode.window.activeColorTheme.kind) || undefined;
+    const isDark = themeKind === vscode.ColorThemeKind.Dark || themeKind === vscode.ColorThemeKind.HighContrast;
+    if (typeof isDark === 'boolean') return isDark ? defaultTokenColors.dark : defaultTokenColors.light;
+    const pref = cfg.get('defaultTheme', 'light');
+    return pref === 'dark' ? defaultTokenColors.dark : defaultTokenColors.light;
+  }
 
   const defaultSectionGutterColors = {
     light: { background: '#e6eef8', stroke: '#bcd', text: '#000000' },
@@ -93,12 +120,14 @@ function activate(context) {
   function createDecorationTypes(colors) {
     disposeDecorationTypes();
     decorationTypes = {};
+    const base = pickDefaultTokenColors();
+    const merged = Object.assign({}, base, colors || {});
     for (const t of tokenTypes) {
-      const color = (colors && colors[t]) || defaultColors[t] || '#ffffff';
+      const color = merged[t] || '#ffffff';
       decorationTypes[t] = vscode.window.createTextEditorDecorationType({
         color: color,
         // add underline for identifier tokens using the token color for the line
-        textDecoration: t === 'identifier' ? `underline solid ${color}` : undefined,    
+        textDecoration: t === 'identifier' ? `underline solid ${color}` : undefined,
         rangeBehavior: vscode.DecorationRangeBehavior.OpenOpen
       });
       context.subscriptions.push(decorationTypes[t]);
@@ -324,7 +353,7 @@ function activate(context) {
 
   // initialize decoration types from configuration
   const initialCfg = vscode.workspace.getConfiguration('brc');
-  const initialColors = initialCfg.get('dynamicHighlighting.colors', defaultColors);
+  const initialColors = initialCfg.get('dynamicHighlighting.colors', undefined);
   createDecorationTypes(initialColors);
 
   // watch for editor & document changes
@@ -337,11 +366,18 @@ function activate(context) {
   // watch for config changes to rebuild colors or toggle behavior
   context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => {
     if (e.affectsConfiguration('brc.dynamicHighlighting.colors')) {
-      const newColors = vscode.workspace.getConfiguration('brc').get('dynamicHighlighting.colors', defaultColors);
+      const newColors = vscode.workspace.getConfiguration('brc').get('dynamicHighlighting.colors', undefined);
       createDecorationTypes(newColors);
       if (vscode.window.activeTextEditor) scheduleUpdate(vscode.window.activeTextEditor, 50);
     }
     if (e.affectsConfiguration('brc.dynamicHighlighting.enabled')) {
+      if (vscode.window.activeTextEditor) scheduleUpdate(vscode.window.activeTextEditor, 50);
+    }
+    if (e.affectsConfiguration('brc.defaultTheme')) {
+      // user changed preferred default variant; rebuild decoration types using same configured colors
+      const cfg = vscode.workspace.getConfiguration('brc');
+      const colors = cfg.get('dynamicHighlighting.colors', undefined);
+      createDecorationTypes(colors);
       if (vscode.window.activeTextEditor) scheduleUpdate(vscode.window.activeTextEditor, 50);
     }
     // rebuild section gutter icons when gutter colors or visibility changes
@@ -366,6 +402,10 @@ function activate(context) {
         try { inlineSectionDecorationTypes[k].dispose(); } catch (e) {}
       }
       inlineSectionDecorationTypes = {};
+      // also rebuild token decoration types so defaults follow theme
+      const cfg = vscode.workspace.getConfiguration('brc');
+      const colors = cfg.get('dynamicHighlighting.colors', undefined);
+      createDecorationTypes(colors);
       if (vscode.window.activeTextEditor) scheduleUpdate(vscode.window.activeTextEditor, 50);
     }));
   }

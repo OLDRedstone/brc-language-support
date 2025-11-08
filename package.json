@@ -63,19 +63,6 @@
         "brc.dynamicHighlighting.colors": {
           "type": "object",
           "default": {
-            "duration": "#005685",
-            "number": "#b5cea8",
-            "color": "#D4BFFF",
-            "string": "#ce9178",
-            "value": "#9cdcfe",
-            "boolean": "#569CD6",
-            "null": "#569CD6",
-            "identifier": "#e0e0e0",
-            "property": "#9CDCFE",
-            "align": "#0087cf",
-            "continuation": "#ffdd00",
-            "separator": "#005685",
-            "terminator": "#ff9900"
           },
           "description": "Per-token colors used by the extension when dynamic highlighting is enabled. Keys are semantic token types defined by the extension."
         }
@@ -93,6 +80,13 @@
               "dark": { "background": "#2b2b3a", "stroke": "#4b5563", "text": "#ffffff" }
             },
             "description": "Colors used for the section gutter icons; provide light and dark theme variants. Example: {light:{background:'#e6eef8',stroke:'#bcd',text:'#000'},dark:{...}}"
+          }
+          ,
+          "brc.defaultTheme": {
+            "type": "string",
+            "default": "light",
+            "enum": ["light", "dark"],
+            "description": "Default preferred theme variant for the BRC extension (affects default colors and generated icons). Choose 'light' to prefer the bundled light theme colors."
           }
       }
     }

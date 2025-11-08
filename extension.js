@@ -25,7 +25,7 @@ function activate(context) {
     provideDocumentSemanticTokens(document) {
       const builder = new vscode.SemanticTokensBuilder(legend);
       const text = document.getText();
-      const { parse } = require('./tools/parse_lib');
+      const { parse } = require('./lib/parse_lib');
       const res = parse(text);
 
       const tokenTypeMap = {};
@@ -214,16 +214,14 @@ function activate(context) {
     const lineCount = doc.lineCount;
     const docText = doc.getText();
 
-    // use provided bracketRanges from parser when available, otherwise compute
     let bracketRanges = Array.isArray(bracketRangesParam) ? bracketRangesParam : [];
     if(!Array.isArray(bracketRanges) || bracketRanges.length === 0){
       try {
-        const parser = require('./tools/parse_lib');
+        const parser = require('./lib/parse_lib');
         if (typeof parser.getBracketRanges === 'function') bracketRanges = parser.getBracketRanges(docText);
       } catch (e) { bracketRanges = bracketRanges || []; }
     }
 
-    // precompute line start offsets (global offsets) for fast mapping
     const lineStarts = new Array(lineCount);
     for (let li = 0; li < lineCount; li++) lineStarts[li] = doc.offsetAt(new vscode.Position(li, 0));
 
@@ -237,22 +235,16 @@ function activate(context) {
     const inlineRangesBySection = {};
     const tokensByLine = Array.isArray(tokensByLineParam) ? tokensByLineParam : [];
 
-    // build a visible-line lookup to only create decoration ranges for visible lines
     const visibleRanges = (editor.visibleRanges || []).map(r => ({ start: r.start.line, end: r.end.line }));
     function isLineVisible(line) {
       for (const vr of visibleRanges) if (line >= vr.start && line <= vr.end) return true;
       return false;
     }
 
-    // First pass: compute semicolon counts across all lines using parser tokens
-    // and record which lines are section starts. We only push actual decoration
-    // ranges for lines that are visible to avoid unnecessary editor.setDecorations work.
     for (let i = 0; i < lineCount; i++) {
       const lineTokens = tokensByLine[i] || [];
       const section = semicolonCount + 1;
 
-  // determine gutter placement column: prefer first non-whitespace character,
-  // fall back to first token.start if available, otherwise column 0
   const lineText = doc.lineAt(i).text;
   let gutterCol = 0;
   const firstNonWS = lineText.search(/\S/);
@@ -267,7 +259,6 @@ function activate(context) {
       }
       prevSection = section;
 
-      // count terminator tokens (semicolon) in this line, grouping consecutive ones
       let priorInLineSeen = 0;
       for (let t = 0; t < lineTokens.length; t++) {
         const tk = lineTokens[t];
@@ -278,7 +269,6 @@ function activate(context) {
           runLen++;
         }
         const lastToken = lineTokens[t + runLen - 1];
-        // only show inline badge if last semicolon is not at end of line
         const lineText = doc.lineAt(i).text;
         if (lastToken.start + lastToken.length !== lineText.length) {
           const semicolonsBefore = semicolonCount + priorInLineSeen + (runLen - 1);
@@ -328,7 +318,7 @@ function activate(context) {
     }
 
     const text = editor.document.getText();
-    const { parse } = require('./tools/parse_lib');
+    const { parse } = require('./lib/parse_lib');
     let res;
     try {
       res = parse(text);

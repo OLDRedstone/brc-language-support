@@ -1,16 +1,23 @@
-# BRC 扩展动态高亮（extension-scoped）
+# Beat Lyric Language Support Extension for VS Code
 
-本扩展提供可选的运行时动态高亮层，仅针对 `brc` 语言生效，并且不会修改或写入用户的主题或 settings.json（即不会改动 `workbench.colorCustomizations` 或 `editor.tokenColorCustomizations`）。
+<p align="center">
+  <img alt="GitHub License" src="https://img.shields.io/github/license/OLDRedstone/brc-language-support">
+  <img src="https://img.shields.io/visual-studio-marketplace/d/brc
+	" alt="Downloads"/>
+</p>
 
-配置项（在 settings UI 或 settings.json 中修改）：
+This extension provides an optional runtime dynamic highlighting layer that only applies to the `brc` language. It is extension-scoped and does not modify the user's theme or settings.json (it will not change `workbench.colorCustomizations` or `editor.tokenColorCustomizations`).
 
-- `brc.dynamicHighlighting.enabled` (boolean, 默认 true)
-	- 是否启用扩展的动态高亮（装饰器层）。若设为 `false`，扩展会清除其所有运行时装饰，完全保留用户主题的显示。
+Configuration (edit in the Settings UI or in `settings.json`):
+
+- `brc.dynamicHighlighting.enabled` (boolean, default: true)
+	- Enable the extension's runtime highlighting layer (decorations). When set to `false`, the extension will remove all its runtime decorations and defer entirely to the user's theme.
 
 - `brc.dynamicHighlighting.colors` (object)
-	- 可按 token 类型自定义颜色（十六进制字符串）。扩展支持的 token 类型包括：`duration`, `number`, `color`, `string`, `value`, `boolean`, `null`, `word`, `property`, `align`, `continuation`, `separator`, `terminator`。
+	- Customize per-token colors used by the extension when dynamic highlighting is enabled. Keys are the semantic token types supported by this extension. Supported token types include:
+		`duration`, `number`, `color`, `string`, `value`, `boolean`, `null`, `word`, `key`, `align`, `continuation`, `separator`, `terminator`.
 
-示例（在 settings.json 中）：
+Example (place in your `settings.json`):
 
 ```json
 {
